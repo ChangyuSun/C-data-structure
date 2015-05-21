@@ -1,0 +1,226 @@
+冒泡：程序：
+void BubbleSort(int arr[], int n)//冒泡排序，这是完整的，n是整个数组大小
+{
+	int i, j;
+
+	for (int i = 0; i < n; i++)
+	for (int j = i; j < n; j++)
+	if (arr[i] > arr[j])//这个符号控制排序方向
+		swap(arr, i, j);
+}
+
+void BubbleSortA(int arr[], int n)//优化的冒泡排序，优化措施是有一次监测到排好了就不用排了
+{
+	int i, j;
+	int flag = 0;
+
+	for (int i = 0; (i < n) && flag; i++)
+	{
+		flag = 0;
+		for (int j = i; j < n; j++)
+		if (arr[i] > arr[j])// 这个符号控制排序方向
+		{
+			swap(arr, i, j);
+			flag = 1;
+		}
+	}
+}
+简单选择：程序：
+void SelectSort(int arr[], int n)
+{
+	int i, j, temp;
+
+	for (i = 0; i < n; i++)
+		for (j = i + 1; j < n; j++)
+			if (arr[i] > arr[j])//控制升序降序
+				swap(arr, i, j);
+}
+简单插入：程序：
+void InsertSort(int arr[], int n)//完整直接插入排序
+{
+	int i, j,temp;
+
+	for (i = 1; i < n; i++)
+	{
+		temp = arr[i];
+		for (j = i - 1; (j >= 0) && (temp < arr[j]); j--)//temp后面控制升降序
+			arr[j + 1] = arr[j];
+		arr[j + 1] = temp;
+	}
+}
+希尔排序：程序：
+void ShellSort(int arr[], int n)//希尔排序，就是跨度较大的插入排序
+{
+	int i, j;
+	int store;
+	int increasement = n * 0.382 + 0.5;//第一种：n / 3 + 1；第二种：n * 0.382 + 0.5;//增量
+
+	while (increasement > 0)
+	{
+		for (i = increasement; i < n; i++)
+		{
+			store = arr[i];
+			for (j = i - increasement; (j >= 0) && (store < arr[j]); j -= increasement)//store后面的大于号小于号控制排序方向
+				arr[j + increasement] = arr[j];
+			arr[j + increasement] = store;
+		}
+		increasement = increasement * 0.382 + 0.5;
+	}
+}
+堆：程序：
+void HeapAdjust(int arr[], int s, int m)//大顶堆调整
+{
+	int i;
+	int temp = arr[s];
+
+	for (i = 2 * s; i <= m; i *= 2)
+	{
+		if ((i < m) && (arr[i] < arr[i + 1]))
+			i++;
+		if (temp >= arr[i])//改换排序顺序的时候temp和arr[i]后面的符号都要改，生成小顶堆
+			break;
+		arr[s] = arr[i];
+		s = i;
+	}
+	arr[s] = temp;
+}
+
+void HeapSort(int arr[], int n)//堆排序，就是升级的选择排序
+{
+	int i;
+
+	for (i = (n - 1) / 2; i >= 0; i--)//生成大大顶堆
+	{
+		HeapAdjust(arr, i, n - 1);
+	}
+
+	for (i = n - 1; i > 0; i--)
+	{
+		swap(arr, 0, i);//选择
+		HeapAdjust(arr, 0, i - 1);//重调整大顶堆
+	}
+}
+归并插入：程序：
+void Merge(int sourceArr[], int tempArr[], int startIndex, int midIndex, int endIndex)//完结
+{
+	int i = startIndex, j = midIndex + 1, k = startIndex;
+	while (i != midIndex + 1 && j != endIndex + 1)
+	{
+		if (sourceArr[i] < sourceArr[j])//这个符号控制升降序
+			tempArr[k++] = sourceArr[i++];
+		else
+			tempArr[k++] = sourceArr[j++];
+	}
+	while (i != midIndex + 1)
+		tempArr[k++] = sourceArr[i++];
+	while (j != endIndex + 1)
+		tempArr[k++] = sourceArr[j++];
+	for (i = startIndex; i <= endIndex; i++)
+		sourceArr[i] = tempArr[i];
+}
+
+void MergeSort(int sourceArr[], int tempArr[], int startIndex, int endIndex)//完结
+{
+	int midIndex;
+	if (startIndex<endIndex)
+	{
+		midIndex = (startIndex + endIndex) / 2;
+		MergeSort(sourceArr, tempArr, startIndex, midIndex);
+		MergeSort(sourceArr, tempArr, midIndex + 1, endIndex);
+		Merge(sourceArr, tempArr, startIndex, midIndex, endIndex);
+	}
+}
+
+void MergePass(int *Sarr, int*Tarr, int s, int n)//完结
+{
+	int i = 0;
+	int j;
+	while (i <= n - 2 * s)
+	{
+		Merge(Sarr, Tarr, i, i + s - 1, i + 2 * s - 1);
+		i = i + 2 * s;
+	}
+	if (i <= n - s)
+		Merge(Sarr, Tarr, i, i + s - 1, n - 1);
+	else
+	for (j = i; j < n; j++)
+		Tarr[j] = Sarr[j];
+}
+
+void MergeSortA(int Sarr[], int n)//完结
+{
+	int* Tarr = (int *)malloc(n * sizeof(int));
+	int k = 1;
+
+	while (k < n)
+	{
+		MergePass(Sarr, Tarr, k, n);
+		k *= 2;
+		MergePass(Tarr, Sarr, k, n);
+		k *= 2;
+	}
+	free(Tarr);
+}
+快速排序：程序：
+int partition(int arr[], int low, int high)//取枢轴值pivot的函数，优化方式是三数取中法
+{
+	int middle = low + (high - low) / 2;
+	int pivot;
+	if (arr[low] > arr[high])
+		swap(arr, low, high);
+	if (arr[middle] > arr[high])
+		swap(arr, middle, high);
+	if (arr[middle] > arr[low])
+		swap(arr, middle, high);
+	pivot = arr[low];
+
+	while (low < high)
+	{
+		while ((low < high) && (pivot <= arr[high]))
+			high--;
+		arr[low] = arr[high];
+		while ((low < high) && (arr[low] <= pivot))//pivot和arr[low]后面的符号表明升序降序
+			low++;
+		arr[high] = arr[low];
+	}
+	arr[low] = pivot;
+
+	return low;
+}
+
+void QuickSort(int arr[], int low, int high) //完整的快速排序，快速排序是特殊的冒泡排序，本来可以优化为小于7直接插入排序优化，但需要改动InsertSort，所以没有实现
+{
+	int pivot;
+
+	//if (high - low + 1> 7)
+	//{
+		if (low < high)
+		{
+			pivot = partition(arr, low, high);
+			QuickSort(arr, low, pivot - 1);
+			QuickSort(arr, pivot + 1, high);
+		}
+	//}
+	//else
+	//	InsertSort(arr, high - low + 1);
+}
+
+void QuickSortA(int arr[], int low, int high) //完整的快速排序，快速排序是特殊的冒泡排序，小于7直接插入排序优化
+{
+	int pivot;
+
+	//if (high - low + 1 > 7)
+	//{
+		while (low < high)
+		{
+			pivot = partition(arr, low, high);
+			QuickSortA(arr, low, pivot - 1);
+			low = pivot + 1; //QuickSort(arr, pivot + 1, high);
+		}
+	//}
+	//else
+	//	InsertSort(arr, high - low + 1);//需要特殊设计的InsertSort
+}
+	复杂度：
+ 
+
